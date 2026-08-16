@@ -12,22 +12,82 @@ interface AppliedImage {
   name: string
 }
 
+/** localStorage key owning this feature's persisted background state. */
+const STORAGE_KEY = 'dsh.ui-custom-bg.v1'
+
+/** The persisted slice: image source plus the visibility percentage. */
+interface PersistedState {
+  url: string
+  name: string
+  visible: number
+}
+
+/**
+ * Read the persisted background state. A corrupt or oversized entry (a huge
+ * data URL can exceed the localStorage quota and fail to write) reads as
+ * `null` — persistence is best-effort, never a crash.
+ */
+function loadPersisted(): PersistedState | null {
+  // Non-browser runs (node e2e booting the client tree) have no localStorage.
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw === null) return null
+    const parsed = JSON.parse(raw) as Partial<PersistedState>
+    if (typeof parsed.url !== 'string' || typeof parsed.name !== 'string') return null
+    return {
+      url: parsed.url,
+      name: parsed.name,
+      visible: typeof parsed.visible === 'number' && Number.isFinite(parsed.visible) ? parsed.visible : 25,
+    }
+  } catch {
+    return null
+  }
+}
+
+/** Write (or clear) the persisted background state; quota failures are ignored. */
+function savePersisted(state: PersistedState | null): void {
+  // Non-browser runs (node e2e booting the client tree) have no localStorage.
+  if (typeof localStorage === 'undefined') return
+  try {
+    if (state === null) {
+      localStorage.removeItem(STORAGE_KEY)
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    }
+  } catch {
+    // Quota exceeded or storage disabled: the in-memory background still
+    // applies for this page, it just will not survive a reload.
+  }
+}
+
 /**
  * Frame-wide floating background control (bottom-right). Picking a local file
  * reads it through FileReader into a data URL; the URL input applies remote
  * images directly. Every change re-applies the image through the injected
- * face, whose effects are owned by the plugin fiber and cleaned up on unload.
+ * face (owned by the plugin fiber, cleaned up on unload) and persists the
+ * choice to localStorage so a reload restores the same background.
  */
 export function BackgroundControl({ applyImage, t }: BackgroundControlProps) {
+  // Read the saved state once (lazy initializer); a fresh visit starts empty.
+  const [initial] = useState(loadPersisted)
   const [open, setOpen] = useState(false)
-  const [image, setImage] = useState<AppliedImage | null>(null)
-  const [visible, setVisible] = useState(25)
+  const [image, setImage] = useState<AppliedImage | null>(() => (
+    initial === null ? null : { url: initial.url, name: initial.name }
+  ))
+  const [visible, setVisible] = useState(() => initial?.visible ?? 25)
   const [urlText, setUrlText] = useState('')
 
-  // Re-apply whenever the image or the visibility changes; the initial run
-  // with `null` is a no-op (nothing applied yet).
+  // Re-apply whenever the image or the visibility changes, and persist the
+  // current choice. The initial run with `null` is a no-op apply plus a
+  // no-op removeItem.
   useEffect(() => {
     applyImage(image?.url ?? null, 1 - visible / 100)
+    if (image === null) {
+      savePersisted(null)
+    } else {
+      savePersisted({ url: image.url, name: image.name, visible })
+    }
   }, [image, visible, applyImage])
 
   const onPick = (event: React.ChangeEvent<HTMLInputElement>): void => {
