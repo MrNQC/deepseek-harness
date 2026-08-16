@@ -1,0 +1,130 @@
+/* Floating custom-background control rendered inside the shell.overlay layer.
+   The overlay layer itself is click-through and frame-wide; this entry is a
+   fixed bottom-right control that opts back into pointer events. All colors
+   come from theme tokens so the control follows light/dark palettes. */
+
+.button {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-overlay);
+  color: var(--dsw-alias-label-primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel {
+  position: fixed;
+  right: 16px;
+  bottom: 64px;
+  width: 260px;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-overlay);
+  color: var(--dsw-alias-label-primary);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.25);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--dsw-font-family);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.preview {
+  width: 100%;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l1);
+}
+
+.fileName {
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pick {
+  display: block;
+  text-align: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--dsw-alias-border-l2);
+  cursor: pointer;
+  font-size: 12px;
+  background: var(--dsw-alias-bg-layer-1);
+  user-select: none;
+}
+
+.urlRow {
+  display: flex;
+  gap: 6px;
+}
+
+.urlInput {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+}
+
+.urlApply {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.visibleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.visibleLabel {
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+}
+
+.reset {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  background: transparent;
+  color: var(--dsw-alias-state-error-primary);
+  cursor: pointer;
+  font-size: 12px;
+}
